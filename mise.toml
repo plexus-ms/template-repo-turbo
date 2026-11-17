@@ -11,8 +11,8 @@ postinstall = "if command -v hk >/dev/null; then hk install --mise; fi"
 # exist and pass.
 
 [tasks.verify]
-description = "Render the template as a new repo, in both shapes, and run the generated repo's own lint"
-run = "tests/newborn.sh"
+description = "Render the template as a new repo, in both shapes, under git's hook environment, and run the generated repo's own lint"
+run = "tests/hook-env.sh"
 
 [tasks.dev]
 description = "No-op: the repo is a template; edit the files under template/"

@@ -13,6 +13,12 @@
 #   KEEP=1 tests/newborn.sh    # leave the rendered repos in place and say where
 set -eu
 
+# git runs a hook with GIT_DIR (and GIT_WORK_TREE) pointing at the pushing repository. Left set,
+# the newborn's `git init` and copier's clones act on that repository instead of the scratch
+# directory: from a linked worktree `git init` marks the shared repository bare.
+# shellcheck disable=SC2046
+unset $(git rev-parse --local-env-vars)
+
 here=$(cd "$(dirname "$0")/.." && pwd)
 tmp=$(mktemp -d)
 [ -n "${KEEP:-}" ] || trap 'rm -rf "$tmp"' EXIT
