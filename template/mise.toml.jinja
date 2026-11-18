@@ -84,12 +84,6 @@ run = [
 # The ops side — playbooks, inventory, secrets pointers — is not here: it lives
 # in the tenant's operations repo (§ 3 PLX-Tenancy), generated from plexus-ms/template-repo-operations.
 
-# Propagation tasks
-
-[tasks.sync]
-description = "Update the project to the latest template version with Copier"
-run = "copier update --trust"
-
 # Internal / hidden tasks
 
 [tasks.install]

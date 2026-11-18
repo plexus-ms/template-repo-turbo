@@ -7,4 +7,4 @@
 - An app repo of `{{ tenant }}`: its apps under `apps/`, each with a marker of its own, and the workspace packages they share under `packages/`.
 {% endif -%}
 - The verbs answer at the root, `mise :dev`, `mise :build` and `mise :verify`, and hand over to Turborepo, which runs each project's `package.json` scripts in the order of the workspace graph.
-- The Plexus version the repo is on is its `plx` pin in `mise.toml`; `mise :sync` takes in the template's changes.
+- The Plexus version the repo is on is its `plx` pin in `mise.toml`; `plx update` takes in the template's changes.
