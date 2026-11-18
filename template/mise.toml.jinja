@@ -42,13 +42,31 @@ _.path = ["{% raw %}{{config_root}}{% endraw %}/node_modules/.bin"]
 description = "Promote staging to prod: fast-forward main to what is on develop (§ 3 PLX-Delivery); refused unless it is a fast-forward"
 run = 'git fetch -q origin && git push origin origin/develop:refs/heads/main'
 
-# Contract verbs
+# Contract verbs (§ 3 PLX-Repo)
 
 [tasks.dev]
+{%- if publishes_packages %}
+description = "No-op: a package repo has no development environment to start; build builds its packages and test exercises them"
+run = 'echo "dev: nothing to start in a package repo"'
+{%- else %}
 depends = ["install"]
 description = "Prepare a development environment and start it"
 usage = 'arg "[app]" help="App to start (e.g. my-app, defaults to all)"'
 run = 'turbo run dev ${usage_app:+--filter=./apps/$usage_app}'
+{%- endif %}
+
+[tasks.build]
+depends = ["install"]
+{%- if publishes_packages %}
+description = "Build the packages, each after the workspace packages it depends on"
+usage = 'arg "[package]" help="Package to build (e.g. my-package, defaults to all)"'
+run = 'turbo run build ${usage_package:+--filter=./packages/$usage_package}'
+{%- else %}
+description = "Build the production artifacts, an app after the workspace packages it depends on"
+# The image build runs the same build scripts inside docker/Dockerfile (PLX-App/Dockerfile).
+usage = 'arg "[app]" help="App to build (e.g. my-app, defaults to all)"'
+run = 'turbo run build ${usage_app:+--filter=./apps/$usage_app}'
+{%- endif %}
 
 [tasks.verify]
 description = "Perform all steps that verify code quality"
