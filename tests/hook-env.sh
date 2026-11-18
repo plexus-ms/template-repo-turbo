@@ -10,7 +10,7 @@ set -eu
 unset $(git rev-parse --local-env-vars)
 
 here=$(cd "$(dirname "$0")" && pwd)
-decoy=$(mktemp -d)
+decoy=$(mktemp -d "${TMPDIR:-/tmp}/newborn.XXXXXX")
 trap 'rm -rf "$decoy"' EXIT
 git init --quiet "$decoy"
 before=$(cat "$decoy/.git/config")

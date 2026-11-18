@@ -10,7 +10,7 @@
 # changes included.
 #
 #   tests/newborn.sh           # render both shapes and lint them
-#   KEEP=1 tests/newborn.sh    # leave the rendered repos in place and say where
+#   KEEP=1 tests/newborn.sh    # leave the rendered repos in place and say where, even on failure
 set -eu
 
 # git runs a hook with GIT_DIR (and GIT_WORK_TREE) pointing at the pushing repository. Left set,
@@ -20,8 +20,8 @@ set -eu
 unset $(git rev-parse --local-env-vars)
 
 here=$(cd "$(dirname "$0")/.." && pwd)
-tmp=$(mktemp -d)
-[ -n "${KEEP:-}" ] || trap 'rm -rf "$tmp"' EXIT
+tmp=$(mktemp -d "${TMPDIR:-/tmp}/newborn.XXXXXX")
+if [ -n "${KEEP:-}" ]; then trap 'echo "kept: $tmp"' EXIT; else trap 'rm -rf "$tmp"' EXIT; fi
 
 newborn() {
   name=$1
@@ -35,5 +35,3 @@ newborn() {
 
 newborn app
 newborn packages -d publishes_packages=true
-
-[ -z "${KEEP:-}" ] || echo "kept: $tmp"
