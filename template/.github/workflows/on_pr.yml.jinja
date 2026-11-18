@@ -53,19 +53,19 @@ jobs:
 
   changeset:
     # The update bot writes no changesets: the verb writes the one its bump
-    # owes and commits it to the bot's branch, pushed with a token minted for
-    # the tenant's own GitHub App (contents write on this repo; repo variable
-    # PLX_APP_ID, secret PLX_APP_PRIVATE_KEY) so that the new tip
-    # runs this workflow; a push with the workflow token starts no run.
+    # owes and commits it to the bot's branch, pushed as the tenant's GitHub
+    # App (the variable GH_CLIENT_ID and the secret GH_PRIVATE_KEY, or the
+    # item github-app in the CI vault, read with OP_SERVICE_ACCOUNT_TOKEN) so
+    # that the new tip runs this workflow; a push with the workflow token
+    # starts no run.
     if: ${{ startsWith(github.head_ref, 'renovate/') }}
     uses: plexus-ms/tooling/.github/workflows/_changeset.yml@0.122.1
-    permissions:
-      contents: write
     with:
-      app_id: ${{ vars.PLX_APP_ID }}
+      gh-client-id: ${{ vars.GH_CLIENT_ID }}
       strategy: ${{ vars.CI_STRATEGY || '{% endraw %}{{ ci_strategy }}{% raw %}' }}
     secrets:
-      app_private_key: ${{ secrets.PLX_APP_PRIVATE_KEY }}
+      gh-private-key: ${{ secrets.GH_PRIVATE_KEY }}
+      op-service-account-token: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
 {% endraw %}{% else %}{% raw %}name: on_pr
 
 # A pull request asks "is the repo sound" (§ 2 PLX-Delivery), tested as the
