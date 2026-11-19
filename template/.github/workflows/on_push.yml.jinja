@@ -1,14 +1,7 @@
 {% if publishes_packages %}{% raw %}name: on_push
 
-# A push to the trunk (§§ 2 and 5 PLX-Delivery): `check`, the whole contract
-# verb, then `publish`: changesets versions and publishes, token-less through
-# OIDC trusted publishing with provenance. Managed by copier: edit the template
-# (plexus-ms/template-repo-turbo), never this file.
-#
-# Where the jobs run is this repo's answer `ci_strategy` (§ 8 PLX-Delivery):
-# {% endraw %}{{ ci_strategy }}{% raw %}. The repo variable CI_STRATEGY overrides it without a commit;
-# `github` there is the way back to the forge's runners while a runner host
-# is down.
+# Generated from plexus-ms/template-repo-turbo: edit the template, never this file.
+# A package repo's trunk mount, check then publish (§ 5 PLX-Delivery).
 
 on:
   push:
@@ -33,30 +26,11 @@ jobs:
       strategy: ${{ vars.CI_STRATEGY || '{% endraw %}{{ ci_strategy }}{% raw %}' }}
 {% endraw %}{% else %}{% raw %}name: on_push
 
-# A push to an environment branch asks "may this ship" (§§ 2 and 3
-# PLX-Delivery): `check`, then `verify` (every app's image built and tested,
-# from content hashes), then `release`: the tested images are published
-# under the commit and deployed where the operations repo's inventory places
-# each app in the branch's environment, main in production and develop in
-# staging. A promotion never builds: a commit whose images the registry
-# holds is published from them and deployed. Run it by hand on an
-# environment branch to deploy that branch again. Managed by copier: edit
-# the template (plexus-ms/template-repo-turbo), never this file.
-#
-# One secret, OP_SERVICE_ACCOUNT_TOKEN, the CI vault's service account token;
-# everything else is read from the vault <owner>-ci (§ 3 PLX-Secrets).
-#
-# Where the jobs run is this repo's answer `ci_strategy` (§ 8 PLX-Delivery):
-# {% endraw %}{{ ci_strategy }}{% raw %}. The repo variable CI_STRATEGY overrides it without a commit;
-# `github` there is the way back to the forge's runners while a runner host
-# is down.
-# The candidates live in `ci_registry`: {% endraw %}{{ ci_registry }}{% raw %}. The app hosts are
-# reached by `ci_overlay`: {% endraw %}{{ ci_overlay }}{% raw %}.
+# Generated from plexus-ms/template-repo-turbo: edit the template, never this file.
+# An app repo's environment-branch mount, check, verify, release (§§ 2 and 3 PLX-Delivery).
 
 on:
-  # No paths filter: a branch created at a commit the repo already knows
-  # counts as a push of no files and would start nothing, and the hashes make
-  # a Markdown-only push cheap.
+  # No paths filter: a branch created at a known commit pushes no files and would start nothing.
   push:
     branches: [main, develop]
   workflow_dispatch:
@@ -67,9 +41,6 @@ permissions:
   actions: read
 
 jobs:
-  # A newer push to the same branch cancels the check or the verify still
-  # going for the older commit; a release once started runs to its end, since
-  # a deploy cut off between migrate and up would strand the host.
   check:
     concurrency:
       group: on_push-verify-${{ github.ref }}
