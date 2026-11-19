@@ -1,8 +1,8 @@
 #!/bin/sh
-# The newborn test is immune to git's hook environment. git runs a hook with GIT_DIR and
-# GIT_WORK_TREE set to the pushing repository, and a `git init` that inherits them rewrites that
-# repository's config (core.bare, core.worktree). This runs tests/newborn.sh with both pointing at
-# a decoy repository, as a hook would, and fails if the decoy's config changed.
+# The newborn test is immune to git's hook environment: tests/newborn.sh runs with GIT_DIR and
+# GIT_WORK_TREE pointing at a decoy repository, as a hook's would, and the decoy's config must not change.
+#
+#   tests/hook-env.sh
 set -eu
 
 # This script runs from a hook too: its own `git init` must not see the real hook's variables.

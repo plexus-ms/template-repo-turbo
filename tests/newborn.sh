@@ -1,22 +1,13 @@
 #!/bin/sh
-# A newborn repo passes its own lint and the contracts' checks: the template is
-# rendered as copier would render it for a new repo, birth tasks included, and
-# the generated repo's own `mise run lint` and its pinned `plx doctor` are run
-# in it. Nothing else reads the template's files the way a consumer's tools do,
-# so a file the formatter rejects would otherwise ship and fail the lint of
-# every repo that takes the version (0.120.0's turbo.json).
-#
-# Both shapes of the template are rendered: an app repo, and a package repo
-# (`publishes_packages`). The working tree is what is rendered, uncommitted
-# changes included.
+# A newborn repo passes its own lint and its pinned `plx doctor`: the working tree, uncommitted
+# changes included, is rendered with its birth tasks as an app repo and as a package repo.
 #
 #   tests/newborn.sh           # render both shapes, lint and doctor them
 #   KEEP=1 tests/newborn.sh    # leave the rendered repos in place and say where, even on failure
 set -eu
 
-# git runs a hook with GIT_DIR (and GIT_WORK_TREE) pointing at the pushing repository. Left set,
-# the newborn's `git init` and copier's clones act on that repository instead of the scratch
-# directory: from a linked worktree `git init` marks the shared repository bare.
+# Left set by a hook, GIT_DIR and GIT_WORK_TREE would point the newborn's `git init` and copier's
+# clones at the pushing repository: from a linked worktree, `git init` marks it bare.
 # shellcheck disable=SC2046
 unset $(git rev-parse --local-env-vars)
 

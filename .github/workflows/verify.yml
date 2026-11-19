@@ -1,9 +1,6 @@
 name: verify
 
-# Mounts the verify verb on every push (§ 2 PLX-Delivery): the template is
-# rendered as a new repo and the generated repo's own lint is run in it, the
-# same `mise verify` the pre-push hook runs, through the shared `check` mount
-# with the whole verb as its task.
+# Mounts the verify verb, the one the pre-push hook runs, on every push (§ 2 PLX-Delivery).
 
 on:
   push:
