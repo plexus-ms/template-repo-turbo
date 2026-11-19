@@ -105,9 +105,9 @@ run = 'eval "set -- $usage_paths"; biome check ${usage_write:+--write} --no-erro
 
 [tasks.check]
 depends = ["install"]
-description = "Run static checks on the codebase: lint, repo-wide, then each project's check script"
+description = "Run static checks on the codebase: lint and the contracts' checks (plx doctor), repo-wide, then each project's check script"
 usage = 'arg "[package]" help="App or package to check (e.g. apps/my-app, defaults to all)"'
-run = ['mise run lint', 'turbo run check ${usage_package:+--filter=./$usage_package}']
+run = ['mise run lint', 'plx doctor', 'turbo run check ${usage_package:+--filter=./$usage_package}']
 
 [tasks.test]
 depends = ["install"]
