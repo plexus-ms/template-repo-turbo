@@ -1,5 +1,15 @@
 _subdirectory: template
 
+# The marker is rendered at birth only: its body is the repo's own prose
+# (§ 1.4 PLX), so an update that rendered it again would conflict with what
+# the repo wrote there. An update leaves it out, and a recopy keeps it; a
+# change to the marker's frontmatter is made by hand with the version that
+# brings it.
+_exclude:
+  - "{% if _copier_operation == 'update' %}PLEXUS.md{% endif %}"
+_skip_if_exists:
+  - PLEXUS.md
+
 _tasks:
   - "git init"
   - "mise trust"
