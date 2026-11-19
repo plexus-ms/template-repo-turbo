@@ -1,14 +1,14 @@
-{% raw %}name: update
+{% raw %}name: plx-update
 
 # Mounts the update verb (§ 3 PLX-Updates): `plx update` takes a patch at once, a
 # minor once the oldest version not taken is update_max_age days old, a major only
 # when asked. Managed by copier: edit the template (plexus-ms/template-repo-turbo).
 #
-# The push and the pull request need an identity of the tenant's own: a GitHub
-# App installed on this repo with contents and pull requests write, its ID in
-# the repo or organisation variable PLX_APP_ID and its private key in the
-# secret PLX_APP_PRIVATE_KEY (the same app the changeset job of a package repo
-# pushes with). Until the variable is set the job is skipped, not failed.
+# The push and the pull request are made as the tenant's GitHub App, the one
+# its CI uses (§ 8 PLX-Delivery). Its credentials are the variable GH_CLIENT_ID
+# and the secret GH_PRIVATE_KEY, of the repo or the organisation, or, without
+# them, the item github-app in the CI vault, read with the secret
+# OP_SERVICE_ACCOUNT_TOKEN. A repo that has neither fails here and says so.
 
 on:
   schedule:
@@ -21,19 +21,18 @@ on:
         default: ''
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 # Where the jobs run: see on_pr.yml.
 jobs:
   update:
-    if: ${{ vars.PLX_APP_ID != '' }}
-    uses: plexus-ms/tooling/.github/workflows/_update.yml@0.122.1
+    uses: plexus-ms/tooling/.github/workflows/_plx-update.yml@0.122.1
     with:
       version: ${{ inputs.version || '' }}
       now: ${{ github.event_name == 'workflow_dispatch' }}
-      app_id: ${{ vars.PLX_APP_ID }}
+      gh-client-id: ${{ vars.GH_CLIENT_ID }}
       strategy: ${{ vars.CI_STRATEGY || '{% endraw %}{{ ci_strategy }}{% raw %}' }}
     secrets:
-      app_private_key: ${{ secrets.PLX_APP_PRIVATE_KEY }}
+      gh-private-key: ${{ secrets.GH_PRIVATE_KEY }}
+      op-service-account-token: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
 {% endraw %}
