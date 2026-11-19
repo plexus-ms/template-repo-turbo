@@ -24,8 +24,23 @@ tenant:
 
 publishes_packages:
   type: bool
-  help: "Does this repo publish npm packages from its trunk (changesets, OIDC trusted publishing, § 5 PLX-Delivery) instead of deploying apps from environment branches?"
+  help: "Does this repo publish npm packages from its trunk (changesets, § 5 PLX-Delivery) instead of deploying apps from environment branches?"
   default: false
+
+package_registry:
+  type: str
+  help: "Where the packages are published (§ 5 PLX-Delivery): npm, the public registry, through OIDC trusted publishing; github, the forge's package registry, private to the tenant, with the workflow's own token"
+  choices:
+    - npm
+    - github
+  default: npm
+  when: "{{ publishes_packages }}"
+
+private_packages_scope:
+  type: str
+  help: "The npm scope of the tenant's private packages this repo installs from the forge's package registry (§ 5 PLX-Delivery), as in @acme-corp; empty when it installs none"
+  default: ""
+  validator: "{% if private_packages_scope and not (private_packages_scope | regex_search('^@[a-z0-9][a-z0-9._-]*$')) %}A scope, as in @acme-corp, or empty{% endif %}"
 
 ci_strategy:
   type: str

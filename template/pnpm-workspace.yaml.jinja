@@ -7,6 +7,13 @@ catalog:
 minimumReleaseAge: 4320
 minimumReleaseAgeExclude:
   - "@plexus-ms/*"
+{%- if private_packages_scope %}
+  - "{{ private_packages_scope }}/*"
+# The tenant's private packages come from the forge's package registry (§ 5 PLX-Delivery); the token
+# is never here: a developer's own ~/.npmrc holds one, and a CI job logs in with its own.
+registries:
+  "{{ private_packages_scope }}": https://npm.pkg.github.com/
+{%- endif %}
 # The one range of the initiative's libraries: the update bot moves it, the template never rewrites it.
 catalogs:
   plexus:

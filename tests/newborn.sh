@@ -1,6 +1,7 @@
 #!/bin/sh
 # A newborn repo passes its own lint and its pinned `plx doctor`: the working tree, uncommitted
-# changes included, is rendered with its birth tasks as an app repo and as a package repo.
+# changes included, is rendered with its birth tasks as an app repo and as a package repo, each also with the
+# tenant's private packages.
 #
 #   tests/newborn.sh           # render both shapes, lint and doctor them
 #   KEEP=1 tests/newborn.sh    # leave the rendered repos in place and say where, even on failure
@@ -38,3 +39,5 @@ EOF
 
 newborn app
 newborn packages -d publishes_packages=true
+newborn private-app -d private_packages_scope=@acme
+newborn private-packages -d publishes_packages=true -d package_registry=github -d private_packages_scope=@acme

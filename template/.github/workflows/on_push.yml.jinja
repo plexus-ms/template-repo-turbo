@@ -1,29 +1,45 @@
 {% if publishes_packages %}{% raw %}name: on_push
 
 # Generated from plexus-ms/template-repo-turbo: edit the template, never this file.
-# A package repo's trunk mount, check then publish (§ 5 PLX-Delivery).
+# A package repo's trunk mount, check then publish; started by hand on a branch, snapshot versions of it (§ 5 PLX-Delivery).
 
 on:
   push:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      snapshot:
+        description: The dist-tag the snapshot versions are published under, as in my-change
+        required: true
+        type: string
 
 permissions:
   contents: write
-  pull-requests: write
+  pull-requests: write{% endraw %}
+{%- if package_registry == 'github' %}
+  packages: write
+{%- else %}
   id-token: write
+{%- if private_packages_scope %}
+  packages: read
+{%- endif %}
+{%- endif %}{% raw %}
 
 jobs:
   check:
     uses: plexus-ms/tooling/.github/workflows/_check.yml@0.124.0
     with:
       strategy: ${{ vars.CI_STRATEGY || '{% endraw %}{{ ci_strategy }}{% raw %}' }}
-      tasks: verify
+      tasks: verify{% endraw %}{% if private_packages_scope %}
+      private-packages: true{% endif %}{% raw %}
 
   publish:
     needs: check
     uses: plexus-ms/tooling/.github/workflows/_publish-package.yml@0.124.0
     with:
       strategy: ${{ vars.CI_STRATEGY || '{% endraw %}{{ ci_strategy }}{% raw %}' }}
+      registry: {% endraw %}{{ package_registry }}{% raw %}
+      snapshot: ${{ inputs.snapshot }}
 {% endraw %}{% else %}{% raw %}name: on_push
 
 # Generated from plexus-ms/template-repo-turbo: edit the template, never this file.
@@ -48,7 +64,8 @@ jobs:
     uses: plexus-ms/tooling/.github/workflows/_check.yml@0.124.0
     with:
       strategy: ${{ vars.CI_STRATEGY || '{% endraw %}{{ ci_strategy }}{% raw %}' }}
-      turbo-cache: {% endraw %}{{ 'true' if ci_registry == 'own' else 'false' }}{% raw %}
+      turbo-cache: {% endraw %}{{ 'true' if ci_registry == 'own' else 'false' }}{% if private_packages_scope %}
+      private-packages: true{% endif %}{% raw %}
     secrets:
       op-service-account-token: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
 
@@ -62,7 +79,8 @@ jobs:
       strategy: ${{ vars.CI_STRATEGY || '{% endraw %}{{ ci_strategy }}{% raw %}' }}
       registry: {% endraw %}{{ ci_registry }}{% raw %}
       deploy: true
-      alerts-email: '{% endraw %}{{ alerts_email }}{% raw %}'
+      alerts-email: '{% endraw %}{{ alerts_email }}{% raw %}'{% endraw %}{% if private_packages_scope %}
+      private-packages: true{% endif %}{% raw %}
     secrets:
       op-service-account-token: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
 
