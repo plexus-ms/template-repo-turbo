@@ -29,6 +29,12 @@ newborn() {
   shift
   echo "→ $name: render"
   copier copy --quiet --defaults --trust --vcs-ref HEAD -d tenant=acme "$@" "$here" "$tmp/$name"
+  # A uv tool (`uvx = true`) needs python pinned: mise's Python keeps the uv tools' environments
+  # inside the cached data directory.
+  if grep -q 'uvx = true' "$tmp/$name/mise.toml" && ! grep -q '^python = ' "$tmp/$name/mise.toml"; then
+    echo "✗ $name: mise.toml installs a PyPI tool through uv but pins no python" >&2
+    exit 1
+  fi
   echo "→ $name: lint"
   (cd "$tmp/$name" && mise run lint)
   echo "→ $name: doctor"

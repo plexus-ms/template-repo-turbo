@@ -6,6 +6,7 @@ config_roots = ["apps/*", "packages/*"]
 [tools]
 node = "24" # the runtime; actions/setup-node reads it from here too
 hk = "latest" # Git hooks
+python = "3.14" # mise's Python keeps the uv tools' environments inside the cached data directory
 uv = "latest" # required for copier
 copier = { version = "latest", uvx = true } # template management
 # plx: the ops verbs the reusable workflows mount — deploy-targets, deploy
