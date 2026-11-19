@@ -1,6 +1,8 @@
 [tools]
 hk = "latest" # Git hooks
-python = "3.14" # mise's Python keeps the uv tools' environments inside the cached data directory
+# mise's Python keeps the uv tools' environments inside the cached data directory; it must satisfy
+# every uv tool's Python requirement, and after changing it reinstall them (`mise install -f <tool>`).
+python = "3.14"
 uv = "latest" # required for copier
 copier = { version = "latest", uvx = true } # renders the template for the newborn test
 node = "24" # the runtime of plx below and nothing else
