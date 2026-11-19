@@ -6,7 +6,7 @@ python = "3.14"
 uv = "latest"
 copier = { version = "latest", uvx = true }
 node = "24" # the runtime of plx below and nothing else
-# plx checks commit messages here (§ 1.8 PLX), pinned by `plx-dev ship` (§ 1.5 PLX);
+# plx lints the template's own files in `verify` (§ 1.8 PLX), pinned by `plx-dev ship` (§ 1.5 PLX);
 # allow_low_downloads only waives npm's young-package heuristics.
 "npm:@plexus-ms/cli" = { version = "0.123.0", allow_low_downloads = true }
 
@@ -14,8 +14,8 @@ node = "24" # the runtime of plx below and nothing else
 postinstall = "if command -v hk >/dev/null; then hk install --mise; fi"
 
 [tasks.verify]
-description = "Render the template as a new repo, in both shapes, under git's hook environment, and run the generated repo's own lint and plx doctor"
-run = "tests/hook-env.sh"
+description = "Lint the template's own files with plx, then render it as a new repo, in both shapes, under git's hook environment, and run the generated repo's own lint and plx doctor"
+run = ["plx requirements .", "tests/hook-env.sh"]
 
 [tasks.dev]
 description = "No-op: the repo is a template; edit the files under template/"

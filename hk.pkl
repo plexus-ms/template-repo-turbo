@@ -1,13 +1,6 @@
 amends "package://github.com/jdx/hk/releases/download/v1.48.0/hk@1.48.0#/Config.pkl"
 
 hooks {
-  ["commit-msg"] {
-    steps {
-      ["issue-id"] {
-        check = "plx requirements --commit-msg {{commit_msg_file}}"
-      }
-    }
-  }
   ["pre-push"] {
     steps {
       ["verify"] {
