@@ -1,7 +1,7 @@
 monorepo_root = true
 
 [monorepo]
-config_roots = ["apps/*", "packages/*"]
+config_roots = [{% if not publishes_packages %}"apps/*", {% endif %}"packages/*"]
 
 [tools]
 node = "24"
@@ -30,10 +30,12 @@ postinstall = "if command -v hk >/dev/null; then hk install --mise; fi && npx co
 [env]
 _.path = ["{% raw %}{{config_root}}{% endraw %}/node_modules/.bin"]
 
+{% if not publishes_packages -%}
 [tasks.promote]
 description = "Promote staging to prod: fast-forward main to what is on develop (§ 3 PLX-Delivery); refused unless it is a fast-forward"
 run = 'git fetch -q origin && git push origin origin/develop:refs/heads/main'
 
+{% endif -%}
 [tasks.dev]
 {%- if publishes_packages %}
 description = "No-op: a package repo has no development environment to start; build builds its packages and test exercises them"
@@ -73,7 +75,7 @@ run = [
 description = "Install and wire up project dependencies"
 hide = true
 run = "pnpm install"
-sources = ["package.json", "apps/*/package.json", "packages/*/package.json", "pnpm-lock.yaml", "pnpm-workspace.yaml"]
+sources = ["package.json", {% if not publishes_packages %}"apps/*/package.json", {% endif %}"packages/*/package.json", "pnpm-lock.yaml", "pnpm-workspace.yaml"]
 outputs = ["node_modules/.pnpm/lock.yaml"]
 
 [tasks.lint]

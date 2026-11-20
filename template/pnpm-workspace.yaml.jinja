@@ -1,5 +1,7 @@
 packages:
+{%- if not publishes_packages %}
   - "apps/*"
+{%- endif %}
   - "packages/*"
 catalog:
   typescript: ^6

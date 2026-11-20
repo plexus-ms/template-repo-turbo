@@ -10,7 +10,7 @@
         "!docs/**",
         "!docker/compose*.yaml"
       ],
-      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
+      "outputs": [{% if not publishes_packages %}".next/**", "!.next/cache/**", {% endif %}"dist/**"]
     },
     "check": {
       "dependsOn": ["^build"],

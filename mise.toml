@@ -14,7 +14,7 @@ node = "24" # the runtime of plx below and nothing else
 postinstall = "if command -v hk >/dev/null; then hk install --mise; fi"
 
 [tasks.verify]
-description = "Lint the template's own files with plx, then render it as a new repo, in both shapes, under git's hook environment, and run the generated repo's own lint and plx doctor"
+description = "Lint the template's own files with plx, then render it as a new repo, in both shapes, under git's hook environment, and run the generated repo's own lint and plx doctor, then a release in each package repo"
 run = ["plx requirements .", "tests/hook-env.sh"]
 
 [tasks.dev]
