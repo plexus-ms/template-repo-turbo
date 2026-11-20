@@ -88,7 +88,7 @@ description = "Build the production artifacts, an app after the workspace packag
 {{ name_arg("build") }}
 run = '''
 {{ scoped("build") }}
-turbo run build ${dir:+--filter="./$dir"}
+turbo run build ${dir:+--filter="{./$dir}..."}
 '''
 
 [tasks.verify]
@@ -124,7 +124,7 @@ run = '''
 {{ scoped("check") }}
 mise run lint
 plx doctor
-turbo run check ${dir:+--filter="./$dir"}
+turbo run check ${dir:+--filter="{./$dir}..."}
 '''
 
 [tasks.test]
@@ -133,5 +133,5 @@ description = "Run tests on the codebase"
 {{ name_arg("test") }}
 run = '''
 {{ scoped("test") }}
-turbo run test ${dir:+--filter="./$dir"}
+turbo run test ${dir:+--filter="{./$dir}..."}
 '''

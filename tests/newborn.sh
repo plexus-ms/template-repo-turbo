@@ -1,8 +1,8 @@
 #!/bin/sh
 # A newborn repo passes its own lint and its pinned `plx doctor`: the working tree, uncommitted
 # changes included, is rendered with its birth tasks as an app repo and as a package repo, each also with the
-# tenant's private packages. In an app repo a verb scopes to an app or a package by name and refuses an unknown
-# one. A package repo also has what a release needs: a workspace package with a pending changeset passes
+# tenant's private packages. In an app repo a verb scopes to an app or a package by name, with what it depends on,
+# and refuses an unknown one. A package repo also has what a release needs: a workspace package with a pending changeset passes
 # `verify`, scoped to it by name, and `changeset version` takes the changeset in.
 #
 #   tests/newborn.sh           # render both shapes, lint and doctor them, scope the app repos, release the package repos
@@ -43,20 +43,35 @@ scope() {
   name=$1
   dir=$tmp/$name
   echo "→ $name: scope"
-  for unit in apps/demo-app packages/demo-lib; do
-    mkdir -p "$dir/$unit"
-    printf '{\n  "name": "%s",\n  "version": "0.0.0",\n  "private": true,\n  "scripts": { "test": "echo tested %s" }\n}\n' \
-      "${unit#*/}" "$unit" > "$dir/$unit/package.json"
-  done
+  mkdir -p "$dir/apps/demo-app" "$dir/packages/demo-lib"
+  cat > "$dir/apps/demo-app/package.json" <<'EOF'
+{
+  "name": "demo-app",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": { "test": "echo tested apps/demo-app" },
+  "dependencies": { "demo-lib": "workspace:*" }
+}
+EOF
+  cat > "$dir/packages/demo-lib/package.json" <<'EOF'
+{
+  "name": "demo-lib",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": { "test": "echo tested packages/demo-lib" }
+}
+EOF
   # The lockfile predates the workspace packages, and under CI=true the verbs' frozen install refuses it.
   (cd "$dir" && pnpm install --lockfile-only)
-  for unit in apps/demo-app packages/demo-lib; do
-    out=$(cd "$dir" && mise run test "${unit#*/}")
-    printf '%s\n' "$out"
-    case $out in *"tested $unit"*) ;; *) echo "✗ $name: test ${unit#*/} did not test $unit" >&2; exit 1 ;; esac
-    case $out in *"tested apps/demo-app"*"tested packages/demo-lib"* | *"tested packages/demo-lib"*"tested apps/demo-app"*)
-      echo "✗ $name: test ${unit#*/} ran beyond $unit" >&2; exit 1 ;; esac
-  done
+  # A name covers the unit and what it depends on: the app's test runs the package's too, never the reverse.
+  out=$(cd "$dir" && mise run test demo-app)
+  printf '%s\n' "$out"
+  case $out in *"tested apps/demo-app"*) ;; *) echo "✗ $name: test demo-app did not test apps/demo-app" >&2; exit 1 ;; esac
+  case $out in *"tested packages/demo-lib"*) ;; *) echo "✗ $name: test demo-app did not test its dependency packages/demo-lib" >&2; exit 1 ;; esac
+  out=$(cd "$dir" && mise run test demo-lib)
+  printf '%s\n' "$out"
+  case $out in *"tested packages/demo-lib"*) ;; *) echo "✗ $name: test demo-lib did not test packages/demo-lib" >&2; exit 1 ;; esac
+  case $out in *"tested apps/demo-app"*) echo "✗ $name: test demo-lib ran its dependent apps/demo-app" >&2; exit 1 ;; esac
   if (cd "$dir" && mise run test demo-none); then
     echo "✗ $name: test demo-none passed, with no such app or package" >&2
     exit 1
