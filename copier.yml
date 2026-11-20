@@ -8,8 +8,10 @@ _skip_if_exists:
   - PLEXUS.md
 
 _tasks:
-  - "git init"
-  - "mise trust"
+  - command: "git init"
+    when: "{{ _copier_operation == 'copy' }}"
+  - command: "mise trust"
+    when: "{{ _copier_operation == 'copy' }}"
   - "mise install"
   # The two pins the toolchain needs exact, written at birth only (§ 3 PLX-Updates).
   - command: "mise exec -- npx corepack use pnpm@12"
