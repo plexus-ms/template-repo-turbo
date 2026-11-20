@@ -1,6 +1,20 @@
+{% macro name_arg(verb) -%}
+{%- if publishes_packages -%}
+usage = 'arg "[name]" help="Package to {{ verb }}, by its directory name under packages/ (e.g. my-package, defaults to all)"'
+{%- else -%}
+usage = 'arg "[name]" help="App or package to {{ verb }}, by its directory name under apps/ or packages/ (e.g. my-app, defaults to all)"'
+{%- endif %}
+{%- endmacro -%}
 {% macro scoped(verb) -%}
 dir=
 if [ -n "${usage_name:-}" ]; then
+{%- if publishes_packages %}
+  case $usage_name in
+    */* | . | ..) echo "{{ verb }}: $usage_name is not a directory name under packages/" >&2; exit 1 ;;
+  esac
+  [ ! -f "packages/$usage_name/package.json" ] || dir=packages/$usage_name
+  [ -n "$dir" ] || { echo "{{ verb }}: no package $usage_name under packages/" >&2; exit 1; }
+{%- else %}
   case $usage_name in
     */* | . | ..) echo "{{ verb }}: $usage_name is not a directory name under apps/ or packages/" >&2; exit 1 ;;
   esac
@@ -10,6 +24,7 @@ if [ -n "${usage_name:-}" ]; then
     dir=$root/$usage_name
   done
   [ -n "$dir" ] || { echo "{{ verb }}: no app or package $usage_name under apps/ or packages/" >&2; exit 1; }
+{%- endif %}
 fi
 {%- endmacro -%}
 monorepo_root = true
@@ -51,11 +66,12 @@ run = 'git fetch -q origin && git push origin origin/develop:refs/heads/main'
 [tasks.dev]
 {%- if publishes_packages %}
 description = "No-op: a package repo has no development environment to start; build builds its packages and test exercises them"
+usage = 'arg "[name]" hide=#true'
 run = 'echo "dev: nothing to start in a package repo"'
 {%- else %}
 depends = ["install"]
 description = "Prepare a development environment and start it"
-usage = 'arg "[name]" help="App or package to start, by its directory name under apps/ or packages/ (e.g. my-app, defaults to all)"'
+{{ name_arg("start") }}
 run = '''
 {{ scoped("dev") }}
 turbo run dev ${dir:+--filter="./$dir"}
@@ -69,7 +85,7 @@ description = "Build the packages, each after the workspace packages it depends 
 {%- else %}
 description = "Build the production artifacts, an app after the workspace packages it depends on"
 {%- endif %}
-usage = 'arg "[name]" help="App or package to build, by its directory name under apps/ or packages/ (e.g. my-app, defaults to all)"'
+{{ name_arg("build") }}
 run = '''
 {{ scoped("build") }}
 turbo run build ${dir:+--filter="./$dir"}
@@ -77,7 +93,7 @@ turbo run build ${dir:+--filter="./$dir"}
 
 [tasks.verify]
 description = "Perform all steps that verify code quality"
-usage = 'arg "[name]" help="App or package to verify, by its directory name under apps/ or packages/ (e.g. my-app, defaults to all)"'
+{{ name_arg("verify") }}
 run = [
     'mise run check ${usage_name:+"$usage_name"}',
     'mise run test ${usage_name:+"$usage_name"}',
@@ -103,7 +119,7 @@ run = 'eval "set -- $usage_paths"; biome check ${usage_write:+--write} --no-erro
 [tasks.check]
 depends = ["install"]
 description = "Run static checks on the codebase: lint and the contracts' checks (plx doctor), repo-wide, then each project's check script"
-usage = 'arg "[name]" help="App or package to check, by its directory name under apps/ or packages/ (e.g. my-app, defaults to all)"'
+{{ name_arg("check") }}
 run = '''
 {{ scoped("check") }}
 mise run lint
@@ -114,7 +130,7 @@ turbo run check ${dir:+--filter="./$dir"}
 [tasks.test]
 depends = ["install"]
 description = "Run tests on the codebase"
-usage = 'arg "[name]" help="App or package to test, by its directory name under apps/ or packages/ (e.g. my-app, defaults to all)"'
+{{ name_arg("test") }}
 run = '''
 {{ scoped("test") }}
 turbo run test ${dir:+--filter="./$dir"}
