@@ -62,6 +62,8 @@ EOF
 }
 EOF
   # The lockfile predates the workspace packages, and under CI=true the verbs' frozen install refuses it.
+  lock=$(mktemp)
+  cp "$dir/pnpm-lock.yaml" "$lock"
   (cd "$dir" && pnpm install --lockfile-only)
   # A name covers the unit and what it depends on: the app's test runs the package's too, never the reverse.
   out=$(cd "$dir" && mise run test demo-app)
@@ -76,6 +78,9 @@ EOF
     echo "✗ $name: test demo-none passed, with no such app or package" >&2
     exit 1
   fi
+  # The two units are no apps of the contract: the render is left as it was born, for whoever examines it next.
+  rm -rf "$dir/apps/demo-app" "$dir/packages/demo-lib"
+  mv "$lock" "$dir/pnpm-lock.yaml"
   echo "✓ $name: scope"
 }
 
