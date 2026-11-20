@@ -32,7 +32,6 @@ jobs:
         with:
           fetch-depth: 0
       - uses: jdx/mise-action@v5{% endraw %}{% if private_packages_scope %}{% raw %}
-      # The private packages' registry takes the job's own token, as in _check.yml.
       - name: Log in to the forge's package registry
         env:
           GITHUB_TOKEN: ${{ github.token }}
