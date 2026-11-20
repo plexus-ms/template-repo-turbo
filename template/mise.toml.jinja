@@ -1,3 +1,17 @@
+{% macro scoped(verb) -%}
+dir=
+if [ -n "${usage_name:-}" ]; then
+  case $usage_name in
+    */* | . | ..) echo "{{ verb }}: $usage_name is not a directory name under apps/ or packages/" >&2; exit 1 ;;
+  esac
+  for root in apps packages; do
+    [ -f "$root/$usage_name/package.json" ] || continue
+    [ -z "$dir" ] || { echo "{{ verb }}: $usage_name is both apps/$usage_name and packages/$usage_name; rename one to scope by name" >&2; exit 1; }
+    dir=$root/$usage_name
+  done
+  [ -n "$dir" ] || { echo "{{ verb }}: no app or package $usage_name under apps/ or packages/" >&2; exit 1; }
+fi
+{%- endmacro -%}
 monorepo_root = true
 
 [monorepo]
@@ -43,8 +57,8 @@ depends = ["install"]
 description = "Prepare a development environment and start it"
 usage = 'arg "[name]" help="App or package to start, by its directory name under apps/ or packages/ (e.g. my-app, defaults to all)"'
 run = '''
-[ -z "${usage_name:-}" ] || [ -d "apps/$usage_name" ] || [ -d "packages/$usage_name" ] || { echo "dev: no app or package $usage_name under apps/ or packages/" >&2; exit 1; }
-turbo run dev ${usage_name:+--filter="./{apps,packages}/$usage_name"}
+{{ scoped("dev") }}
+turbo run dev ${dir:+--filter="./$dir"}
 '''
 {%- endif %}
 
@@ -57,8 +71,8 @@ description = "Build the production artifacts, an app after the workspace packag
 {%- endif %}
 usage = 'arg "[name]" help="App or package to build, by its directory name under apps/ or packages/ (e.g. my-app, defaults to all)"'
 run = '''
-[ -z "${usage_name:-}" ] || [ -d "apps/$usage_name" ] || [ -d "packages/$usage_name" ] || { echo "build: no app or package $usage_name under apps/ or packages/" >&2; exit 1; }
-turbo run build ${usage_name:+--filter="./{apps,packages}/$usage_name"}
+{{ scoped("build") }}
+turbo run build ${dir:+--filter="./$dir"}
 '''
 
 [tasks.verify]
@@ -90,18 +104,18 @@ run = 'eval "set -- $usage_paths"; biome check ${usage_write:+--write} --no-erro
 depends = ["install"]
 description = "Run static checks on the codebase: lint and the contracts' checks (plx doctor), repo-wide, then each project's check script"
 usage = 'arg "[name]" help="App or package to check, by its directory name under apps/ or packages/ (e.g. my-app, defaults to all)"'
-run = [
-    '''[ -z "${usage_name:-}" ] || [ -d "apps/$usage_name" ] || [ -d "packages/$usage_name" ] || { echo "check: no app or package $usage_name under apps/ or packages/" >&2; exit 1; }''',
-    'mise run lint',
-    'plx doctor',
-    'turbo run check ${usage_name:+--filter="./{apps,packages}/$usage_name"}',
-]
+run = '''
+{{ scoped("check") }}
+mise run lint
+plx doctor
+turbo run check ${dir:+--filter="./$dir"}
+'''
 
 [tasks.test]
 depends = ["install"]
 description = "Run tests on the codebase"
 usage = 'arg "[name]" help="App or package to test, by its directory name under apps/ or packages/ (e.g. my-app, defaults to all)"'
 run = '''
-[ -z "${usage_name:-}" ] || [ -d "apps/$usage_name" ] || [ -d "packages/$usage_name" ] || { echo "test: no app or package $usage_name under apps/ or packages/" >&2; exit 1; }
-turbo run test ${usage_name:+--filter="./{apps,packages}/$usage_name"}
+{{ scoped("test") }}
+turbo run test ${dir:+--filter="./$dir"}
 '''
