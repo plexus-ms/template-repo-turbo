@@ -77,10 +77,10 @@ alerts_email:
   default: ""
   when: "{{ not publishes_packages and ci_strategy == 'hybrid' }}"
 
-renovate_reviewers:
+pr_reviewers:
   type: str
-  help: "GitHub logins the update bot requests a review from on the PRs that wait for a human, comma-separated (empty: none); a PR the bot merges itself asks nobody unless its checks fail"
-  default: ""
+  help: "GitHub logins asked to review the pull requests that wait for a human, the update bot's and plx update's alike, comma-separated (empty: none); a pull request the bot merges itself asks nobody unless its checks fail"
+  default: "{{ renovate_reviewers | default('') }}"
 
 update_max_age:
   type: int

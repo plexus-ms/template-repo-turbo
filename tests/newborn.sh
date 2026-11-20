@@ -66,7 +66,7 @@ EOF
 
 newborn app
 newborn packages -d publishes_packages=true
-newborn private-app -d private_packages_scope=@acme
+newborn private-app -d private_packages_scope=@acme -d pr_reviewers=reviewer-a,reviewer-b
 newborn private-packages -d publishes_packages=true -d package_registry=github -d private_packages_scope=@acme
 release packages
 release private-packages
