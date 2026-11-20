@@ -6,8 +6,6 @@ config_roots = [{% if not publishes_packages %}"apps/*", {% endif %}"packages/*"
 [tools]
 node = "24"
 hk = "latest"
-# mise's Python keeps the uv tools' environments inside the cached data directory; it must satisfy
-# every uv tool's Python requirement, and after changing it reinstall them (`mise install -f <tool>`).
 python = "3.14"
 uv = "latest"
 copier = { version = "latest", uvx = true }
