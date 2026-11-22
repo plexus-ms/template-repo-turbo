@@ -1,7 +1,7 @@
 #!/bin/sh
 # A newborn repo passes its own lint and its pinned `plx doctor`: the working tree, uncommitted
 # changes included, is rendered with its birth tasks as an app repo and as a package repo, each also with the
-# tenant's private packages. In an app repo a verb scopes to an app or a package by name, with what it depends on,
+# tenant's private packages, and an app repo also with display versions. In an app repo a verb scopes to an app or a package by name, with what it depends on,
 # and refuses an unknown one. A package repo also has what a release needs: a workspace package with a pending changeset passes
 # `verify`, scoped to it by name, and `changeset version` takes the changeset in.
 #
@@ -113,6 +113,16 @@ EOF
 newborn app
 newborn packages -d publishes_packages=true
 newborn private-app -d private_packages_scope=@acme -d pr_reviewers=reviewer-a,reviewer-b
+newborn versioned-app -d display_versions=true
+# Display versions are off unless asked for: without the answer the release job and the marker are as before.
+grep -q 'display-versions: true' "$tmp/versioned-app/.github/workflows/on_push.yml" && grep -q '^major: 1$' "$tmp/versioned-app/PLEXUS.md" || {
+  echo "✗ versioned-app: on_push.yml does not ask for display versions, or PLEXUS.md states no major" >&2
+  exit 1
+}
+if grep -q 'display-versions\|contents: write' "$tmp/app/.github/workflows/on_push.yml" || grep -q '^major:' "$tmp/app/PLEXUS.md"; then
+  echo "✗ app: display versions without the answer" >&2
+  exit 1
+fi
 newborn private-packages -d publishes_packages=true -d package_registry=github -d private_packages_scope=@acme
 scope app
 scope private-app
