@@ -1,7 +1,8 @@
 _subdirectory: template
 
 # The marker is rendered at birth only: its body is the repo's own prose (§ 1.4 PLX), which an update would
-# conflict with; a change to its frontmatter is made by hand with the version that brings it.
+# conflict with; a change to its frontmatter is made by hand with the version that brings it. So is the
+# `major` of a repo that turns display versions on after its birth.
 _exclude:
   - "{% if _copier_operation == 'update' %}PLEXUS.md{% endif %}"
 _skip_if_exists:
@@ -76,6 +77,12 @@ alerts_email:
   help: "Hybrid strategy: the address mailed when an instance misses its boot and is kept (empty: no mail); a fact, so an answer here and never a vault item"
   default: ""
   when: "{{ not publishes_packages and ci_strategy == 'hybrid' }}"
+
+display_versions:
+  type: bool
+  help: "Do the apps show a display version (PLX-Releases)? A production release that changes an app then cuts a version tag, MAJOR.MINOR, with a GitHub Release, and every deploy hands the app its display version; the repo's PLEXUS.md states the major"
+  default: false
+  when: "{{ not publishes_packages }}"
 
 pr_reviewers:
   type: str

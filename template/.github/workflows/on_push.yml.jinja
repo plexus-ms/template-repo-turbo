@@ -85,7 +85,16 @@ jobs:
       op-service-account-token: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
 
   release:
-    needs: verify
+    needs: verify{% endraw %}{% if display_versions %}{% raw %}
+    # Display versions (PLX-Releases): serialized per branch and never cancelled, so that two pushes to main
+    # never take the same number, and allowed to write the tag and the GitHub Release of the version it cuts.
+    concurrency:
+      group: on_push-release-${{ github.ref }}
+      cancel-in-progress: false
+    permissions:
+      contents: write
+      packages: write
+      actions: read{% endraw %}{% endif %}{% raw %}
     uses: plexus-ms/tooling/.github/workflows/_release.yml@0.128.0
     with:
       strategy: ${{ vars.CI_STRATEGY || '{% endraw %}{{ ci_strategy }}{% raw %}' }}
@@ -93,7 +102,8 @@ jobs:
       overlay: {% endraw %}{{ ci_overlay }}{% raw %}
       apps: ${{ needs.verify.outputs.apps }}
       deploys: ${{ needs.verify.outputs.deploys }}
-      environment: ${{ needs.verify.outputs.environment }}
+      environment: ${{ needs.verify.outputs.environment }}{% endraw %}{% if display_versions %}
+      display-versions: true{% endif %}{% raw %}
     secrets:
       op-service-account-token: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
 {% endraw %}{% endif %}
