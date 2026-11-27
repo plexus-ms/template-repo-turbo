@@ -20,7 +20,7 @@ permissions:
 
 jobs:
   housekeeping:
-    uses: plexus-ms/tooling/.github/workflows/_housekeeping.yml@0.129.1
+    uses: plexus-ms/tooling/.github/workflows/_housekeeping.yml@0.130.0
     with:
       strategy: ${{ vars.CI_STRATEGY || '{% endraw %}{{ ci_strategy }}{% raw %}' }}
       registry: ghcr
